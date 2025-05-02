@@ -6,7 +6,7 @@ from src.util_functions import set_logger, save_plt
 
 def run_fl(Server, global_config, data_config, fed_config, model_config):
     if not os.path.exists(f"./Logs/{fed_config['algorithm']}"):
-        os.mkdir(f"./Logs/{fed_config['algorithm']}")
+        os.makedirs(f"./Logs/{fed_config['algorithm']}", exist_ok=True)
     if not os.path.exists(f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}"):
         os.mkdir(f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}")
     
