@@ -1,0 +1,9 @@
+Data/
+.ipynb_checkpoints
+__pycache__
+*.txt
+*.png
+venv
+LICENSE
+README.md
+share
