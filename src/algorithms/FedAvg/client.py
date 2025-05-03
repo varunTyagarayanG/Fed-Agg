@@ -37,6 +37,7 @@ class Client():
         for epoch in range(self.num_epochs):
             for inputs, labels in self.data:  # Iterate over all batches in local dataset
                 inputs, labels = inputs.float().to(self.device), labels.long().to(self.device)
+                self.y.to(self.device)
                 output = self.y(inputs)
                 loss = self.criterion(output, labels)
 
