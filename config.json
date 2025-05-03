@@ -8,15 +8,15 @@
       "algorithm": "FedAvg",
       "fraction_clients": 0.1,
       "num_clients": 100,
-      "num_rounds": 100,
-      "num_epochs": 10,
+      "num_rounds": 200,
+      "num_epochs": 12,
       "batch_size": 32,
       "global_stepsize": 1,
       "local_stepsize": 0.05,
       "criterion": "torch.nn.CrossEntropyLoss"
    },
    "model_config": {
-      "name": "CNN_Cifar"
+      "name": "ResNet18_CIFAR"
    },
    "global_config": {
       "seed": 42,
