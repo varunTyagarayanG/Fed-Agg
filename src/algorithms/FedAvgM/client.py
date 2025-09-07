@@ -40,7 +40,7 @@ class Client():
         #self.y.to(device)
         
         for epoch in range(self.num_epochs):
-            inputs,labels = iter(self.data).next()
+            inputs, labels = next(iter(self.data))
             inputs, labels = inputs.float().to(self.device), labels.long().to(self.device)
             output = self.y(inputs)
             loss = self.criterion(output, labels) #Calculate the loss with respect to y's output and labels
