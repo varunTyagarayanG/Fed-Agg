@@ -4,6 +4,8 @@ import logging
 import matplotlib.pyplot as plt
 from mpi4py import MPI
 from src.util_functions import set_logger, save_plt
+import importlib
+
 
 def run_fl(Server, global_config, data_config, fed_config, model_config, comm, rank, size):
     # Create directories only in the root process to avoid race conditions
@@ -39,9 +41,11 @@ def run_fl(Server, global_config, data_config, fed_config, model_config, comm, r
     # Save plots only from the root process
     if rank == 0:
         save_plt(list(range(1, server.num_rounds + 1)), server.results['accuracy'],
-                 "Communication Round", "Test Accuracy", f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/accgraph.png")
+                 "Communication Round", "Test Accuracy",
+                 f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/accgraph.png")
         save_plt(list(range(1, server.num_rounds + 1)), server.results['loss'],
-                 "Communication Round", "Test Loss", f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/lossgraph.png")
+                 "Communication Round", "Test Loss",
+                 f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/lossgraph.png")
         logging.info("Plots saved successfully")
 
     logging.info(f"Process {rank}: Execution has completed")
@@ -68,8 +72,10 @@ if __name__ == "__main__":
     fed_config = config["fed_config"]
     model_config = config["model_config"]
 
-    # Dynamically import Server
-    exec(f"from src.algorithms.{fed_config['algorithm']}.server import Server")
+    # Dynamically import Server class
+    module_name = f"src.algorithms.{fed_config['algorithm']}.server"
+    server_module = importlib.import_module(module_name)
+    Server = server_module.Server
 
-    # Run federated learning
+    # Run federated learning with MPI
     run_fl(Server, global_config, data_config, fed_config, model_config, comm, rank, size)
