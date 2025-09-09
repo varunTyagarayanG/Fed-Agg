@@ -5,54 +5,58 @@ import matplotlib.pyplot as plt
 from mpi4py import MPI
 from src.util_functions import set_logger, save_plt
 
-def run_fl(Server, global_config, data_config, fed_config, model_config):
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
-
+def run_fl(Server, global_config, data_config, fed_config, model_config, comm, rank, size):
     # Create directories only in the root process to avoid race conditions
     if rank == 0:
-        if not os.path.exists(f"./Logs/{fed_config['algorithm']}"):
-            os.makedirs(f"./Logs/{fed_config['algorithm']}", exist_ok=True)
-        if not os.path.exists(f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}"):
-            os.mkdir(f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}")
+        log_dir = f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/"
+        os.makedirs(log_dir, exist_ok=True)
 
     # Synchronize all processes before continuing
     comm.Barrier()
 
     # Each process sets up its own logging file with rank distinction
-    filename = f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/"
-    set_logger(f"{filename}log_rank{rank}.txt")
+    log_filename = f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/log_rank{rank}.txt"
+    set_logger(log_filename)
 
     logging.info(f"Process {rank} is initializing the server")
 
-    server = Server(model_config, global_config, data_config, fed_config, comm, rank, size)
+    # Pass comm, rank, and size to the Server
+    server = Server(
+        model_config,
+        global_config,
+        data_config,
+        fed_config,
+        comm=comm,
+        rank=rank,
+        size=size
+    )
 
     logging.info(f"Process {rank}: Server is successfully initialized")
 
     server.setup()  # Initializes clients and splits data among processes
-
     server.train()  # Trains the global model for multiple rounds
 
     # Save plots only from the root process
     if rank == 0:
         save_plt(list(range(1, server.num_rounds + 1)), server.results['accuracy'],
-                 "Communication Round", "Test Accuracy", f"{filename}accgraph.png")
+                 "Communication Round", "Test Accuracy", f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/accgraph.png")
         save_plt(list(range(1, server.num_rounds + 1)), server.results['loss'],
-                 "Communication Round", "Test Loss", f"{filename}lossgraph.png")
+                 "Communication Round", "Test Loss", f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/lossgraph.png")
         logging.info("Plots saved successfully")
 
     logging.info(f"Process {rank}: Execution has completed")
 
 
 if __name__ == "__main__":
+    # Initialize MPI
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
+    size = comm.Get_size()
 
-    # Load config only in the root process and broadcast it
+    # Load config only in the root process
     if rank == 0:
-        with open('config.json', 'r') as file_obj:
-            config = json.load(file_obj)
+        with open('config.json', 'r') as f:
+            config = json.load(f)
     else:
         config = None
 
@@ -64,8 +68,8 @@ if __name__ == "__main__":
     fed_config = config["fed_config"]
     model_config = config["model_config"]
 
-    # Dynamically import Server as in original code
+    # Dynamically import Server
     exec(f"from src.algorithms.{fed_config['algorithm']}.server import Server")
 
-    # Pass comm, rank, size to the server if needed
-    run_fl(Server, global_config, data_config, fed_config, model_config)
+    # Run federated learning
+    run_fl(Server, global_config, data_config, fed_config, model_config, comm, rank, size)
