@@ -3,20 +3,21 @@ import json
 import logging
 import matplotlib.pyplot as plt
 from mpi4py import MPI
+from datetime import datetime
 from src.util_functions import set_logger, save_plt
 import importlib
 
 
-def run_fl(Server, global_config, data_config, fed_config, model_config, comm, rank, size):
+def run_fl(Server, global_config, data_config, fed_config, model_config, comm, rank, size, run_id):
     # Create log directories only on root
     if rank == 0:
-        log_dir = f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/"
+        log_dir = f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/{run_id}/"
         os.makedirs(log_dir, exist_ok=True)
 
     comm.Barrier()
 
-    # Set logger per rank
-    log_filename = f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/log_rank{rank}.txt"
+    # Set logger per rank with unique run ID
+    log_filename = f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/{run_id}/log_rank{rank}.txt"
     set_logger(log_filename)
     logging.info(f"Process {rank} is initializing the server")
 
@@ -32,10 +33,10 @@ def run_fl(Server, global_config, data_config, fed_config, model_config, comm, r
     if rank == 0:
         save_plt(list(range(1, server.num_rounds + 1)), server.results['accuracy'],
                  "Communication Round", "Test Accuracy",
-                 f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/accgraph.png")
+                 f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/{run_id}/accgraph.png")
         save_plt(list(range(1, server.num_rounds + 1)), server.results['loss'],
                  "Communication Round", "Test Loss",
-                 f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/lossgraph.png")
+                 f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/{run_id}/lossgraph.png")
         logging.info("Plots saved successfully")
 
     logging.info(f"Process {rank}: Execution has completed")
@@ -61,10 +62,17 @@ if __name__ == "__main__":
     fed_config = config["fed_config"]
     model_config = config["model_config"]
 
+    # Generate unique run ID using timestamp
+    if rank == 0:
+        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    else:
+        run_id = None
+    run_id = comm.bcast(run_id, root=0)
+
     # Dynamically import Server
     module_name = f"src.algorithms.{fed_config['algorithm']}.server"
     server_module = importlib.import_module(module_name)
     Server = server_module.Server
 
-    # Run federated learning
-    run_fl(Server, global_config, data_config, fed_config, model_config, comm, rank, size)
+    # Run federated learning with the unique run ID
+    run_fl(Server, global_config, data_config, fed_config, model_config, comm, rank, size, run_id)
