@@ -20,6 +20,9 @@ def main():
         train(model, train_loader, optimizer, criterion, device, epoch)
         if epoch % 10 == 0 or epoch == num_epochs:
             test(model, test_loader, device)
+import logging
+logging.basicConfig(filename="training.log", filemode="w", level=logging.INFO,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 
 if __name__ == "__main__":
     main()
