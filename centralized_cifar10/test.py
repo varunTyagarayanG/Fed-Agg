@@ -1,6 +1,7 @@
 import logging
 import torch.nn as nn
-
+import torch
+import logging
 criterion = nn.CrossEntropyLoss()
 
 def test(model, dataloader, device):
