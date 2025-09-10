@@ -15,7 +15,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.01)
 
-    num_epochs = 100
+    num_epochs = 12
     for epoch in range(1, num_epochs + 1):
         train(model, train_loader, optimizer, criterion, device, epoch)
         if epoch % 10 == 0 or epoch == num_epochs:
