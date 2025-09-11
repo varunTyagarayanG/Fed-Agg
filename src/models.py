@@ -28,7 +28,7 @@ class CNN_Cifar(nn.Module):
             nn.Linear(120, 84),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Linear(84, num_classes)
+            nn.Softmax(84, num_classes)
         )
 
     def forward(self, x):
