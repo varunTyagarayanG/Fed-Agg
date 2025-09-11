@@ -1,62 +1,72 @@
+import torch
 import torch.nn as nn
 
 class CNN_Cifar(nn.Module):
     """
-    This CNN is inspired by LeNet-5. It differs from Lenet-5 in few things such as 
-    using ReLU instead of Sigmoid and using MaxPooling instead of AveragePooling.
-    This architecture is only suitable for CIFAR dataset.
+    LeNet-5 inspired CNN for CIFAR dataset. 
+    Uses ReLU activations, BatchNorm, and MaxPooling.
+    Suitable for 32x32 RGB images.
     """
-    def __init__(self,num_classes=10):
+    def __init__(self, num_classes=10):
         super().__init__()
         self.feature_extractor = nn.Sequential(
-                                    nn.Conv2d(3,6,5,1,2),
-                                    nn.ReLU(),
-                                    nn.MaxPool2d(2,2),
-                                    nn.Conv2d(6,16,5),
-                                    nn.ReLU(),
-                                    nn.MaxPool2d(2,2)
-                                 )
+            nn.Conv2d(in_channels=3, out_channels=6, kernel_size=5, stride=1, padding=2),   # output: (6,32,32)
+            nn.BatchNorm2d(6),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),                          # output: (6,16,16)
+            
+            nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),        # output: (16,12,12)
+            nn.BatchNorm2d(16),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2)                           # output: (16,6,6)
+        )
         self.fully_connected = nn.Sequential(
-                                  nn.Linear(576,120),
-                                  nn.ReLU(),
-                                  nn.Linear(120,84),
-                                  nn.ReLU(),
-                                  nn.Linear(84,num_classes),
-                               )
-    def forward(self,x):
+            nn.Flatten(),                                                   # output: 16*6*6 = 576
+            nn.Linear(16*6*6, 120),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(120, 84),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(84, num_classes)
+        )
+
+    def forward(self, x):
         x = self.feature_extractor(x)
-        x = nn.Flatten()(x)
         x = self.fully_connected(x)
         return x
-
 
 class CNN_Mnist(nn.Module):
     """
-    This CNN is inspired by LeNet-5. It differs from Lenet-5 in few things such as 
-    using ReLU instead of Sigmoid and using MaxPooling instead of AveragePooling.
-    This architecture is only suitable for MNIST dataset.
+    LeNet-5 inspired CNN for MNIST dataset. 
+    Uses ReLU activations, BatchNorm, and MaxPooling.
+    Suitable for 28x28 single-channel images.
     """
-    def __init__(self,num_classes=10):
+    def __init__(self, num_classes=10):
         super().__init__()
         self.feature_extractor = nn.Sequential(
-                                    nn.Conv2d(1,6,5,1,2),
-                                    nn.ReLU(),
-                                    nn.MaxPool2d(2,2),
-                                    nn.Conv2d(6,16,5),
-                                    nn.ReLU(),
-                                    nn.MaxPool2d(2,2)
-                                )
+            nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5, stride=1, padding=2),
+            nn.BatchNorm2d(6),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),                       
+            
+            nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),
+            nn.BatchNorm2d(16),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2)   
+        )
         self.fully_connected = nn.Sequential(
-                                  nn.Linear(400,120),
-                                  nn.ReLU(),
-                                  nn.Linear(120,84),
-                                  nn.ReLU(),
-                                  nn.Linear(84,num_classes),
-                                )
-    def forward(self,x):
+            nn.Flatten(),                                          
+            nn.Linear(16*5*5, 120),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(120, 84),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(84, num_classes)
+        )
+
+    def forward(self, x):
         x = self.feature_extractor(x)
-        x = nn.Flatten()(x)
         x = self.fully_connected(x)
-        
         return x
-        
