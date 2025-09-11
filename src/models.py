@@ -10,25 +10,36 @@ class CNN_Cifar(nn.Module):
     def __init__(self, num_classes=10):
         super().__init__()
         self.feature_extractor = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=6, kernel_size=5, stride=1, padding=2),   # output: (6,32,32)
+            nn.Conv2d(3, 6, kernel_size=5, stride=1, padding=2), 
             nn.BatchNorm2d(6),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),                          # output: (6,16,16)
-            
-            nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),        # output: (16,12,12)
+            nn.MaxPool2d(2,2), 
+
+            nn.Conv2d(6,16, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(16),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2)                           # output: (16,6,6)
+            nn.MaxPool2d(2,2),
+
+            nn.Conv2d(16,32, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2,2),
+
+            nn.Conv2d(32,64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(2,2)
         )
+
         self.fully_connected = nn.Sequential(
-            nn.Flatten(),                                                   # output: 16*6*6 = 576
+            nn.Flatten(),                                        
             nn.Linear(16*6*6, 120),
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(120, 84),
             nn.ReLU(),
             nn.Dropout(0.5),
-            nn.Softmax(84, num_classes)
+            nn.Linear(84, num_classes)
         )
 
     def forward(self, x):
