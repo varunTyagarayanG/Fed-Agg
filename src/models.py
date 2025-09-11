@@ -32,15 +32,16 @@ class CNN_Cifar(nn.Module):
         )
 
         self.fully_connected = nn.Sequential(
-            nn.Flatten(),                                        
-            nn.Linear(16*6*6, 120),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(120, 84),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(84, num_classes)
-        )
+    nn.Flatten(),
+    nn.Linear(64*2*2, 120),  # 256 input features, matching final output of feature extractor
+    nn.ReLU(),
+    nn.Dropout(0.5),
+    nn.Linear(120, 84),
+    nn.ReLU(),
+    nn.Dropout(0.5),
+    nn.Linear(84, num_classes)
+)
+
 
     def forward(self, x):
         x = self.feature_extractor(x)
