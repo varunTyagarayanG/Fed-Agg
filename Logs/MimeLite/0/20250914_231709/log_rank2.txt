@@ -1,0 +1,4 @@
+2025-09-14 23:17:09,327:INFO: Process 2 is initializing the server
+2025-09-14 23:17:09,845:INFO: Process 2: Server is successfully initialized
+2025-09-14 23:18:20,270:INFO: Rank 2: Clients initialized
+2025-09-14 23:18:21,472:INFO: Rank 2: Communication Round 1
