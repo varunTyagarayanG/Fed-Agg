@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 from copy import deepcopy
 
 class Client():
@@ -33,21 +34,22 @@ class Client():
         and stores it for sending back to the server.
         """
         self.y = deepcopy(self.x)  # Initialize local model from global model
+        # Use a standard optimizer for gradient updates
+        optimizer = torch.optim.Adam(self.y.parameters(), lr=self.lr)
 
         for epoch in range(self.num_epochs):
             for inputs, labels in self.data:  # Iterate over all batches in local dataset
                 inputs, labels = inputs.float().to(self.device), labels.long().to(self.device)
+                
+                # Zero the parameter gradients
+                optimizer.zero_grad()
+                
+                # Forward + backward + optimize
                 output = self.y(inputs)
                 loss = self.criterion(output, labels)
-
-                # Compute gradients of the loss w.r.t. model parameters
-                grads = torch.autograd.grad(loss, self.y.parameters())
-
-                # Update local model parameters using gradient descent
-                with torch.no_grad():
-                    for param, grad in zip(self.y.parameters(), grads):
-                        param.data -= self.lr * grad.data
-
+                loss.backward()
+                optimizer.step()
+                
         # Optional: Clear cache if using GPU
-        # if self.device == "cuda":
-        #     torch.cuda.empty_cache()
+        if self.device == "cuda":
+            torch.cuda.empty_cache()
