@@ -1,76 +1,136 @@
-import os
-import json
+import numpy as np
 import logging
-import matplotlib.pyplot as plt
+import torch
+from copy import deepcopy
+from .client import Client
+from src.models import *
+from src.load_data_for_clients import dist_data_per_client
+from src.util_functions import set_seed, evaluate_fn
 from mpi4py import MPI
-from datetime import datetime
-from src.util_functions import set_logger, save_plt
-import importlib
 
-def run_fl(Server, global_config, data_config, fed_config, model_config, comm, rank, size, run_id):
-    # Create log directories only on root
-    if rank == 0:
-        log_dir = f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/{run_id}/"
-        os.makedirs(log_dir, exist_ok=True)
 
-    comm.Barrier()
+class Server:
+    def __init__(self, model_config={}, global_config={}, data_config={}, fed_config={}, optim_config={},
+                 comm=None, rank=0, size=1):
+        set_seed(global_config["seed"])
+        self.device = global_config["device"]
 
-    # Set logger per rank with unique run ID
-    log_filename = f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/{run_id}/log_rank{rank}.txt"
-    set_logger(log_filename)
-    logging.info(f"Process {rank} is initializing the server")
+        self.data_path = data_config["dataset_path"]
+        self.dataset_name = data_config["dataset_name"]
+        self.non_iid_per = data_config["non_iid_per"]
 
-    # Initialize server
-    server = Server(model_config=model_config, global_config=global_config, data_config=data_config, fed_config=fed_config, comm=comm, rank=rank, size=size)
-    logging.info(f"Process {rank}: Server is successfully initialized")
+        self.fraction = fed_config["fraction_clients"]
+        self.num_clients = fed_config["num_clients"]
+        self.num_rounds = fed_config["num_rounds"]
+        self.num_epochs = fed_config["num_epochs"]
+        self.batch_size = fed_config["batch_size"]
+        self.criterion = eval(fed_config["criterion"])()
+        self.lr = fed_config["global_stepsize"]
+        self.lr_l = fed_config["local_stepsize"]
 
-    # Setup clients and start training
-    server.setup()
-    server.train()
+        self.x = eval(model_config["name"])()
+        self.clients = None
 
-    # Save plots on root only
-    if rank == 0:
-        save_plt(list(range(1, server.num_rounds + 1)), server.results['accuracy'],
-                 "Communication Round", "Test Accuracy",
-                 f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/{run_id}/accgraph.png")
-        save_plt(list(range(1, server.num_rounds + 1)), server.results['loss'],
-                 "Communication Round", "Test Loss",
-                 f"./Logs/{fed_config['algorithm']}/{data_config['non_iid_per']}/{run_id}/lossgraph.png")
-        logging.info("Plots saved successfully")
+        # MPI attributes
+        self.comm = comm if comm else MPI.COMM_WORLD
+        self.rank = rank
+        self.size = size
 
-    logging.info(f"Process {rank}: Execution has completed")
+    def create_clients(self, local_datasets):
+        clients = []
+        for id_num, dataset in enumerate(local_datasets):
+            client = Client(client_id=id_num, local_data=dataset, device=self.device,
+                            num_epochs=self.num_epochs, criterion=self.criterion, lr=self.lr_l)
+            clients.append(client)
+        return clients
 
-if __name__ == "__main__":
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
+    def setup(self, **init_kwargs):
+        """Initializes all the Clients and splits the train dataset among them"""
+        if self.rank == 0:
+            local_datasets, test_dataset = dist_data_per_client(
+                self.data_path, self.dataset_name, self.num_clients,
+                self.batch_size, self.non_iid_per, self.device
+            )
+        else:
+            local_datasets = None
+            test_dataset = None
 
-    # Load config on root
-    if rank == 0:
-        with open('config.json', 'r') as f:
-            config = json.load(f)
-    else:
-        config = None
+        # Broadcast test dataset to all processes
+        test_dataset = self.comm.bcast(test_dataset, root=0)
+        self.data = test_dataset
 
-    # Broadcast config to all ranks
-    config = comm.bcast(config, root=0)
+        # Split local_datasets among processes
+        if self.rank == 0:
+            datasets_per_rank = np.array_split(local_datasets, self.size)
+        else:
+            datasets_per_rank = None
 
-    global_config = config["global_config"]
-    data_config = config["data_config"]
-    fed_config = config["fed_config"]
-    model_config = config["model_config"]
+        # Scatter datasets to all ranks
+        local_dataset = self.comm.scatter(datasets_per_rank, root=0)
 
-    # Generate unique run ID using timestamp
-    if rank == 0:
-        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-    else:
-        run_id = None
-    run_id = comm.bcast(run_id, root=0)
+        self.clients = self.create_clients(local_dataset)
+        logging.info(f"Process {self.rank}: Clients are successfully initialized")
 
-    # Dynamically import Server
-    module_name = f"src.algorithms.{fed_config['algorithm']}.server"
-    server_module = importlib.import_module(module_name)
-    Server = server_module.Server
+    def sample_clients(self):
+        """Selects a fraction of clients from all the available clients"""
+        num_sampled_clients = max(int(self.fraction * len(self.clients)), 1)
+        sampled_client_ids = sorted(np.random.choice(a=[i for i in range(len(self.clients))],
+                                                     size=num_sampled_clients, replace=False).tolist())
+        return sampled_client_ids
 
-    # Run federated learning with the unique run ID
-    run_fl(Server, global_config, data_config, fed_config, model_config, comm, rank, size, run_id)
+    def communicate(self, client_ids):
+        """Communicates global model(x) to the participating clients"""
+        for idx in client_ids:
+            self.clients[idx].x = deepcopy(self.x)
+
+    def update_clients(self, client_ids):
+        """Tells all the clients to perform client_update"""
+        for idx in client_ids:
+            self.clients[idx].client_update()
+
+    def server_update(self, client_ids):
+        """Updates the global model(x) by averaging updates from all processes"""
+        # Collect client models into CPU tensors
+        avg_params = [torch.zeros_like(param.data, device='cpu') for param in self.x.parameters()]
+
+        # Sum client updates locally
+        for idx in client_ids:
+            for avg, param in zip(avg_params, self.clients[idx].y.parameters()):
+                avg.add_(param.detach().cpu())
+
+        # Reduce across all ranks
+        for i in range(len(avg_params)):
+            self.comm.Allreduce(MPI.IN_PLACE, avg_params[i].numpy(), op=MPI.SUM)
+
+        # Average by total number of clients globally
+        total_clients = len(client_ids) * self.size
+        for param, avg in zip(self.x.parameters(), avg_params):
+            param.data = (avg / total_clients).to(self.device)
+
+    def step(self):
+        """Performs single round of training"""
+        sampled_client_ids = self.sample_clients()
+        self.communicate(sampled_client_ids)
+        self.update_clients(sampled_client_ids)
+        logging.info(f"Process {self.rank}: client_update has completed")
+        self.server_update(sampled_client_ids)
+        logging.info(f"Process {self.rank}: server_update has completed")
+
+    def train(self):
+        """Performs multiple rounds of training using the 'step' method."""
+        self.results = {"loss": [], "accuracy": []}
+        for rnd in range(self.num_rounds):
+            logging.info(f"\nProcess {self.rank}: Communication Round {rnd+1}")
+            self.step()
+            test_loss, test_acc = evaluate_fn(self.data, self.x, self.criterion, self.device)
+
+            # Gather metrics at root
+            losses = self.comm.gather(test_loss, root=0)
+            accs = self.comm.gather(test_acc, root=0)
+
+            if self.rank == 0:
+                avg_loss = sum(losses) / len(losses)
+                avg_acc = sum(accs) / len(accs)
+                self.results['loss'].append(avg_loss)
+                self.results['accuracy'].append(avg_acc)
+                logging.info(f"\tLoss: {avg_loss:.4f}   Accuracy: {avg_acc:.2f}%")
