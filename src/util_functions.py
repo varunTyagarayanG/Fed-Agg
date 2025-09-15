@@ -105,12 +105,14 @@ def numpy_to_tensor(data, device, dtype="float"):
 def evaluate_fn(dataloader, model, loss_fn, device):
     model.eval()
     running_loss, total, correct = 0, 0, 0
-    for batch, (images, labels) in enumerate(dataloader):
-        output = model(images.to(device))
-        loss = loss_fn(output, labels.to(device))
-        running_loss += loss.item()
-        total += labels.size(0)
-        correct += (output.argmax(dim=1).cpu() == labels.cpu()).sum().item()
+    with torch.no_grad():
+        for batch, (images, labels) in enumerate(dataloader):
+            images, labels = images.to(device), labels.to(device)
+            output = model(images)
+            loss = loss_fn(output, labels)
+            running_loss += loss.item()
+            total += labels.size(0)
+            correct += (output.argmax(dim=1) == labels).sum().item()
     avg_loss = running_loss/(batch+1)
     acc = 100 * (correct/total)
     return avg_loss, acc
