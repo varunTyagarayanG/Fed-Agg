@@ -1,0 +1,4 @@
+2025-09-14 22:57:27,530:INFO: Process 3 is initializing the server
+2025-09-14 22:57:28,176:INFO: Process 3: Server is successfully initialized
+2025-09-14 22:57:42,808:INFO: Rank 3: Initialized 10 clients
+2025-09-14 22:57:42,809:INFO: Rank 3: Starting round 1

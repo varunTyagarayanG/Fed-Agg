@@ -1,0 +1,4 @@
+2025-09-14 22:57:27,527:INFO: Process 0 is initializing the server
+2025-09-14 22:57:28,179:INFO: Process 0: Server is successfully initialized
+2025-09-14 22:57:42,840:INFO: Rank 0: Initialized 10 clients
+2025-09-14 22:57:42,887:INFO: Rank 0: Starting round 1
