@@ -8,11 +8,11 @@
       "algorithm": "FedAvg",
       "fraction_clients": 0.1,
       "num_clients": 100,
-      "num_rounds": 100,
+      "num_rounds": 140,
       "num_epochs": 12,
-      "batch_size": 32,
+      "batch_size": 64,
       "global_stepsize": 1,
-      "local_stepsize": 0.001,
+      "local_stepsize": 0.01,
       "criterion": "torch.nn.CrossEntropyLoss"
    },
    "model_config": {
