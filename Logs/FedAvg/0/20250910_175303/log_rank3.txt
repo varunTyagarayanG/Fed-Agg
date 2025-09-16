@@ -1,0 +1,9 @@
+2025-09-10 17:53:03,968:INFO: Process 3 is initializing the server
+2025-09-10 17:53:03,973:INFO: Process 3: Server is successfully initialized
+2025-09-10 17:53:07,282:INFO: Process 3: Clients are successfully initialized
+2025-09-10 17:53:07,282:INFO: 
+Process 3: Communication Round 1
+2025-09-10 17:53:09,895:INFO: Process 3: client_update has completed
+2025-09-10 17:53:10,213:INFO: Process 3: server_update has completed
+2025-09-10 17:53:15,543:INFO: 
+Process 3: Communication Round 2

@@ -1,0 +1,80 @@
+2025-09-16 05:10:31,930:INFO: Process 0 is initializing the server
+2025-09-16 05:10:31,936:INFO: Process 0: Server is successfully initialized
+2025-09-16 05:10:41,644:INFO: Process 0: Clients are successfully initialized
+2025-09-16 05:10:41,646:INFO: 
+Process 0: Communication Round 1
+2025-09-16 05:12:44,271:INFO: Process 0: client_update has completed
+2025-09-16 05:12:53,648:INFO: Process 0: server_update has completed
+2025-09-16 05:14:17,666:INFO: 	Loss: 22.4572   Accuracy: 12.22%
+2025-09-16 05:14:17,666:INFO: 
+Process 0: Communication Round 2
+2025-09-16 05:16:19,806:INFO: Process 0: client_update has completed
+2025-09-16 05:16:24,641:INFO: Process 0: server_update has completed
+2025-09-16 05:17:45,896:INFO: 	Loss: 2.3276   Accuracy: 11.85%
+2025-09-16 05:17:45,897:INFO: 
+Process 0: Communication Round 3
+2025-09-16 05:19:46,339:INFO: Process 0: client_update has completed
+2025-09-16 05:19:53,185:INFO: Process 0: server_update has completed
+2025-09-16 05:21:14,245:INFO: 	Loss: 2.0510   Accuracy: 24.08%
+2025-09-16 05:21:14,245:INFO: 
+Process 0: Communication Round 4
+2025-09-16 05:23:13,429:INFO: Process 0: client_update has completed
+2025-09-16 05:23:21,157:INFO: Process 0: server_update has completed
+2025-09-16 05:24:41,756:INFO: 	Loss: 2.0807   Accuracy: 23.57%
+2025-09-16 05:24:41,756:INFO: 
+Process 0: Communication Round 5
+2025-09-16 05:26:43,023:INFO: Process 0: client_update has completed
+2025-09-16 05:26:48,669:INFO: Process 0: server_update has completed
+2025-09-16 05:28:10,392:INFO: 	Loss: 2.0119   Accuracy: 25.06%
+2025-09-16 05:28:10,392:INFO: 
+Process 0: Communication Round 6
+2025-09-16 05:30:10,608:INFO: Process 0: client_update has completed
+2025-09-16 05:30:15,399:INFO: Process 0: server_update has completed
+2025-09-16 05:31:37,560:INFO: 	Loss: 1.9133   Accuracy: 30.09%
+2025-09-16 05:31:37,560:INFO: 
+Process 0: Communication Round 7
+2025-09-16 05:33:38,365:INFO: Process 0: client_update has completed
+2025-09-16 05:33:45,265:INFO: Process 0: server_update has completed
+2025-09-16 05:35:08,236:INFO: 	Loss: 1.9548   Accuracy: 29.20%
+2025-09-16 05:35:08,237:INFO: 
+Process 0: Communication Round 8
+2025-09-16 05:37:10,029:INFO: Process 0: client_update has completed
+2025-09-16 05:37:14,059:INFO: Process 0: server_update has completed
+2025-09-16 05:38:37,512:INFO: 	Loss: 1.9732   Accuracy: 29.94%
+2025-09-16 05:38:37,512:INFO: 
+Process 0: Communication Round 9
+2025-09-16 05:40:36,998:INFO: Process 0: client_update has completed
+2025-09-16 05:40:43,521:INFO: Process 0: server_update has completed
+2025-09-16 05:42:04,988:INFO: 	Loss: 2.0004   Accuracy: 31.58%
+2025-09-16 05:42:04,988:INFO: 
+Process 0: Communication Round 10
+2025-09-16 05:44:06,185:INFO: Process 0: client_update has completed
+2025-09-16 05:44:11,165:INFO: Process 0: server_update has completed
+2025-09-16 05:45:33,580:INFO: 	Loss: 2.0183   Accuracy: 29.53%
+2025-09-16 05:45:33,581:INFO: 
+Process 0: Communication Round 11
+2025-09-16 05:47:34,396:INFO: Process 0: client_update has completed
+2025-09-16 05:47:40,929:INFO: Process 0: server_update has completed
+2025-09-16 05:49:02,060:INFO: 	Loss: 1.9658   Accuracy: 30.84%
+2025-09-16 05:49:02,060:INFO: 
+Process 0: Communication Round 12
+2025-09-16 05:51:00,634:INFO: Process 0: client_update has completed
+2025-09-16 05:51:08,889:INFO: Process 0: server_update has completed
+2025-09-16 05:52:29,394:INFO: 	Loss: 2.0176   Accuracy: 32.60%
+2025-09-16 05:52:29,394:INFO: 
+Process 0: Communication Round 13
+2025-09-16 05:54:28,340:INFO: Process 0: client_update has completed
+2025-09-16 05:54:36,885:INFO: Process 0: server_update has completed
+2025-09-16 05:56:00,196:INFO: 	Loss: 2.0413   Accuracy: 33.23%
+2025-09-16 05:56:00,196:INFO: 
+Process 0: Communication Round 14
+2025-09-16 05:57:59,771:INFO: Process 0: client_update has completed
+2025-09-16 05:58:04,425:INFO: Process 0: server_update has completed
+2025-09-16 05:59:25,440:INFO: 	Loss: 2.0547   Accuracy: 33.88%
+2025-09-16 05:59:25,440:INFO: 
+Process 0: Communication Round 15
+2025-09-16 06:01:26,126:INFO: Process 0: client_update has completed
+2025-09-16 06:01:30,289:INFO: Process 0: server_update has completed
+2025-09-16 06:02:51,909:INFO: 	Loss: 2.0365   Accuracy: 33.78%
+2025-09-16 06:02:51,909:INFO: 
+Process 0: Communication Round 16

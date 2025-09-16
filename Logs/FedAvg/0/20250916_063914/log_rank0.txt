@@ -1,0 +1,30 @@
+2025-09-16 06:39:14,417:INFO: Process 0 is initializing the server
+2025-09-16 06:39:14,431:INFO: Process 0: Server is successfully initialized
+2025-09-16 06:39:26,687:INFO: Process 0: Clients are successfully initialized
+2025-09-16 06:39:26,701:INFO: 
+Process 0: Communication Round 1
+2025-09-16 06:41:51,089:INFO: Process 0: client_update has completed
+2025-09-16 06:42:11,075:INFO: Process 0: server_update has completed
+2025-09-16 06:43:33,999:INFO: 	Loss: 9.0888   Accuracy: 11.82%
+2025-09-16 06:43:34,000:INFO: 
+Process 0: Communication Round 2
+2025-09-16 06:45:34,947:INFO: Process 0: client_update has completed
+2025-09-16 06:45:41,072:INFO: Process 0: server_update has completed
+2025-09-16 06:47:02,328:INFO: 	Loss: 2.2261   Accuracy: 19.07%
+2025-09-16 06:47:02,328:INFO: 
+Process 0: Communication Round 3
+2025-09-16 06:49:01,079:INFO: Process 0: client_update has completed
+2025-09-16 06:49:08,265:INFO: Process 0: server_update has completed
+2025-09-16 06:50:30,405:INFO: 	Loss: 1.9732   Accuracy: 24.81%
+2025-09-16 06:50:30,406:INFO: 
+Process 0: Communication Round 4
+2025-09-16 06:52:28,749:INFO: Process 0: client_update has completed
+2025-09-16 06:52:36,893:INFO: Process 0: server_update has completed
+2025-09-16 06:53:58,464:INFO: 	Loss: 2.0106   Accuracy: 26.58%
+2025-09-16 06:53:58,464:INFO: 
+Process 0: Communication Round 5
+2025-09-16 06:56:02,284:INFO: Process 0: client_update has completed
+2025-09-16 06:56:05,737:INFO: Process 0: server_update has completed
+2025-09-16 06:57:31,278:INFO: 	Loss: 1.9269   Accuracy: 29.20%
+2025-09-16 06:57:31,279:INFO: 
+Process 0: Communication Round 6

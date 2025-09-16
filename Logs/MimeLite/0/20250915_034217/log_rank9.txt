@@ -1,0 +1,3 @@
+2025-09-15 03:42:17,031:INFO: Process 9 is initializing the server
+2025-09-15 03:42:17,118:INFO: Process 9: Server is successfully initialized
+2025-09-15 03:42:17,118:INFO: Rank 9: Communication Round 1

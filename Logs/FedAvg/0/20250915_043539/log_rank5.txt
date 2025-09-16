@@ -1,0 +1,5 @@
+2025-09-15 04:35:39,948:INFO: Process 5 is initializing the server
+2025-09-15 04:35:40,066:INFO: Process 5: Server is successfully initialized
+2025-09-15 04:35:49,738:INFO: Process 5: Clients are successfully initialized
+2025-09-15 04:35:49,738:INFO: 
+Process 5: Communication Round 1

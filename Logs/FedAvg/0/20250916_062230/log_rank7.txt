@@ -1,0 +1,25 @@
+2025-09-16 06:22:30,585:INFO: Process 7 is initializing the server
+2025-09-16 06:22:30,602:INFO: Process 7: Server is successfully initialized
+2025-09-16 06:22:38,644:INFO: Process 7: Clients are successfully initialized
+2025-09-16 06:22:38,644:INFO: 
+Process 7: Communication Round 1
+2025-09-16 06:24:50,422:INFO: Process 7: client_update has completed
+2025-09-16 06:24:50,985:INFO: Process 7: server_update has completed
+2025-09-16 06:26:12,825:INFO: 
+Process 7: Communication Round 2
+2025-09-16 06:28:18,130:INFO: Process 7: client_update has completed
+2025-09-16 06:28:20,217:INFO: Process 7: server_update has completed
+2025-09-16 06:29:41,964:INFO: 
+Process 7: Communication Round 3
+2025-09-16 06:31:48,895:INFO: Process 7: client_update has completed
+2025-09-16 06:31:48,970:INFO: Process 7: server_update has completed
+2025-09-16 06:33:09,769:INFO: 
+Process 7: Communication Round 4
+2025-09-16 06:35:16,666:INFO: Process 7: client_update has completed
+2025-09-16 06:35:17,149:INFO: Process 7: server_update has completed
+2025-09-16 06:36:37,219:INFO: 
+Process 7: Communication Round 5
+2025-09-16 06:38:42,652:INFO: Process 7: client_update has completed
+2025-09-16 06:38:44,341:INFO: Process 7: server_update has completed
+2025-09-16 06:40:26,926:INFO: 
+Process 7: Communication Round 6

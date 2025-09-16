@@ -1,0 +1,3 @@
+2025-09-15 03:40:24,548:INFO: Process 6 is initializing the server
+2025-09-15 03:40:24,662:INFO: Process 6: Server is successfully initialized
+2025-09-15 03:40:24,662:INFO: Rank 6: Communication Round 1

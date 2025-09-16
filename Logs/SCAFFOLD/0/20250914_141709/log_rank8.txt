@@ -1,0 +1,15 @@
+2025-09-14 14:17:09,610:INFO: Process 8 is initializing the server
+2025-09-14 14:17:09,685:INFO: Process 8: Server is successfully initialized
+2025-09-14 14:17:14,638:INFO: Process 8: Clients are successfully initialized
+2025-09-14 14:17:14,638:INFO: 
+Process 8: Communication Round 1
+2025-09-14 14:21:28,988:INFO: Process 8: client_update has completed
+2025-09-14 14:21:35,283:INFO: Process 8: server_update has completed
+2025-09-14 14:23:48,529:INFO: 
+Process 8: Communication Round 2
+2025-09-14 14:27:49,649:INFO: Process 8: client_update has completed
+2025-09-14 14:28:02,742:INFO: Process 8: server_update has completed
+2025-09-14 14:30:14,245:INFO: 
+Process 8: Communication Round 3
+2025-09-14 14:34:10,846:INFO: Process 8: client_update has completed
+2025-09-14 14:34:30,895:INFO: Process 8: server_update has completed
