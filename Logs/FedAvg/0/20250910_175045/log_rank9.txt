@@ -1,5 +1,0 @@
-2025-09-10 17:50:45,542:INFO: Process 9 is initializing the server
-2025-09-10 17:50:45,544:INFO: Process 9: Server is successfully initialized
-2025-09-10 17:50:49,625:INFO: Process 9: Clients are successfully initialized
-2025-09-10 17:50:49,626:INFO: 
-Process 9: Communication Round 1

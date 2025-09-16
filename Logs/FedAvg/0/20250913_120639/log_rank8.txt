@@ -1,5 +1,0 @@
-2025-09-13 12:06:39,741:INFO: Process 8 is initializing the server
-2025-09-13 12:06:39,844:INFO: Process 8: Server is successfully initialized
-2025-09-13 12:06:44,566:INFO: Process 8: Clients are successfully initialized
-2025-09-13 12:06:44,567:INFO: 
-Process 8: Communication Round 1
