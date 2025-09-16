@@ -19,11 +19,9 @@ class CNN_Cifar(nn.Module):
         # Conv Block 2: 64x16x16 -> 128x8x8
         self.conv2 = nn.Conv2d(64, 128, kernel_size=5, padding=2)
         self.bn2 = nn.BatchNorm2d(128)
-        
-        # Global Average Pooling -> 128 features
+
         self.gap = nn.AdaptiveAvgPool2d((1,1))
         
-        # Classifier
         self.fc1 = nn.Linear(128, num_classes)
 
     def forward(self, x):
