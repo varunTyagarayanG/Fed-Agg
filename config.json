@@ -9,10 +9,10 @@
       "fraction_clients": 0.1,
       "num_clients": 100,
       "num_rounds": 140,
-      "num_epochs": 2,
+      "num_epochs": 3,
       "batch_size": 64,
       "global_stepsize": 1,
-      "local_stepsize": 0.005,
+      "local_stepsize": 0.001,
       "criterion": "torch.nn.CrossEntropyLoss"
    },
    "model_config": {
