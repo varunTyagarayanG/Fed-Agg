@@ -9,7 +9,7 @@
       "fraction_clients": 0.1,
       "num_clients": 100,
       "num_rounds": 140,
-      "num_epochs": 12,
+      "num_epochs": 2,
       "batch_size": 64,
       "global_stepsize": 1,
       "local_stepsize": 0.005,
