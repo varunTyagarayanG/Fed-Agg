@@ -1,0 +1,15 @@
+2025-09-18 23:00:25,502:INFO: Process 0 is initializing the server
+2025-09-18 23:00:26,052:INFO: Process 0: Server is successfully initialized
+2025-09-18 23:01:21,650:INFO: Process 0: Clients are successfully initialized
+2025-09-18 23:01:22,089:INFO: 
+Process 0: Communication Round 1
+2025-09-18 23:02:53,533:INFO: Process 0: client_update has completed
+2025-09-18 23:03:00,313:INFO: Process 0: server_update has completed
+2025-09-18 23:05:42,703:INFO: 	Loss: 2.3236   Accuracy: 10.33%
+2025-09-18 23:05:42,703:INFO: 
+Process 0: Communication Round 2
+2025-09-18 23:07:20,332:INFO: Process 0: client_update has completed
+2025-09-18 23:07:23,273:INFO: Process 0: server_update has completed
+2025-09-18 23:10:31,655:INFO: 	Loss: 2.1689   Accuracy: 18.03%
+2025-09-18 23:10:31,828:INFO: 
+Process 0: Communication Round 3
