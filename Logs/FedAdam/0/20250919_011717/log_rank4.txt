@@ -1,0 +1,4 @@
+2025-09-19 01:17:18,050:INFO: Process 4 is initializing the server
+2025-09-19 01:17:18,407:INFO: Process 4: Server is successfully initialized
+2025-09-19 01:17:25,726:INFO: Rank 4: Initialized 20 clients
+2025-09-19 01:17:25,730:INFO: Rank 4: Starting FedAdam training for 140 rounds
