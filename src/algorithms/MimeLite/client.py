@@ -1,39 +1,43 @@
 import torch
 from copy import deepcopy
 
-
 class Client:
-    def __init__(self, client_id, local_data, device, num_epochs, criterion, lr):
+    def __init__(self, client_id, local_data, device, num_epochs, lr, criterion):
         self.id = client_id
-        self.data = local_data              # expected to be a DataLoader
+        self.data = local_data
         self.device = device
         self.num_epochs = num_epochs
         self.lr = lr
         self.criterion = criterion
-        self.x = None
-        self.y = None
-        self.delta_y = None
-        self.state = None
+
+        self.model = None
+        self.gradient_x = None  # required for MimeLite
+        self.delta = None       # client model delta
+
+    def set_model(self, model):
+        """Receive global model"""
+        self.model = deepcopy(model).to(self.device)
 
     def client_update(self):
-        # initialize local model from global x
-        self.y = deepcopy(self.x).to(self.device)
-        self.y.train()
+        """Perform local training and compute gradients (MimeLite needs gradients + delta)."""
+        self.model.train()
+        optimizer = torch.optim.SGD(self.model.parameters(), lr=self.lr)
 
-        optimizer = torch.optim.SGD(self.y.parameters(), lr=self.lr)
-
-        for epoch in range(self.num_epochs):
-            for inputs, labels in self.data:
-                inputs, labels = inputs.float().to(self.device), labels.long().to(self.device)
-
+        for _ in range(self.num_epochs):
+            for x, y in self.data:
+                x, y = x.to(self.device), y.to(self.device)
                 optimizer.zero_grad()
-                output = self.y(inputs)
-                loss = self.criterion(output, labels)
+                out = self.model(x)
+                loss = self.criterion(out, y)
                 loss.backward()
+
+                # Store gradients for MimeLite
+                grads = [p.grad.detach().clone() for p in self.model.parameters()]
+                self.gradient_x = grads
+
                 optimizer.step()
 
-        # compute delta_y (model update)
-        with torch.no_grad():
-            delta_y = [p_y.detach().cpu() - p_x.detach().cpu()
-                       for p_y, p_x in zip(self.y.parameters(), self.x.parameters())]
-        self.delta_y = delta_y
+        # Compute delta (local_model - global_model)
+        self.delta = [p.data.detach().clone() for p in self.model.parameters()]
+
+        return self.delta, self.gradient_x
