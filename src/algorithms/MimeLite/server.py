@@ -1,84 +1,152 @@
 import numpy as np
+import logging
 import torch
 from copy import deepcopy
-from mpi4py import MPI
-
 from .client import Client
 from src.models import *
 from src.load_data_for_clients import dist_data_per_client
-from src.util_functions import evaluate_fn
+from src.util_functions import set_seed, evaluate_fn
+from mpi4py import MPI
+
 
 class Server:
-    def __init__(self, global_config, data_config, fed_config, model_config, comm, rank, size):
-        self.comm = comm
+    def __init__(self, model_config={}, global_config={}, data_config={}, fed_config={}, optim_config={},
+                 comm=None, rank=0, size=1):
+        set_seed(global_config["seed"])
+        self.device = global_config["device"]
+
+        self.data_path = data_config["dataset_path"]
+        self.dataset_name = data_config["dataset_name"]
+        self.non_iid_per = data_config["non_iid_per"]
+
+        self.fraction = fed_config["fraction_clients"]
+        self.num_clients = fed_config["num_clients"]
+        self.num_rounds = fed_config["num_rounds"]
+        self.num_epochs = fed_config["num_epochs"]
+        self.batch_size = fed_config["batch_size"]
+        self.criterion = eval(fed_config["criterion"])()
+        self.lr = fed_config["global_stepsize"]
+        self.lr_l = fed_config["local_stepsize"]
+
+        self.x = eval(model_config["name"])()
+        self.clients = None
+
+        # MPI attributes
+        self.comm = comm if comm else MPI.COMM_WORLD
         self.rank = rank
         self.size = size
 
-        self.device = global_config["device"]
-        self.num_rounds = fed_config["num_rounds"]
-        self.clients_per_round = fed_config["clients_per_round"]
+    def create_clients(self, local_datasets):
+        clients = []
+        for id_num, dataset in enumerate(local_datasets):
+            client = Client(client_id=id_num, local_data=dataset, device=self.device,
+                            num_epochs=self.num_epochs, criterion=self.criterion, lr=self.lr_l)
+            clients.append(client)
+        return clients
 
-        # Init global model
-        self.global_model = init_model(model_config).to(self.device)
-
-        # Setup clients (only rank 0 initializes full list)
+    def setup(self, **init_kwargs):
+        """Initializes all the Clients and splits the train dataset among them"""
         if self.rank == 0:
-            client_data = dist_data_per_client(data_config)
-            self.clients = [
-                Client(cid, data, self.device, fed_config["num_epochs"], fed_config["lr"], torch.nn.CrossEntropyLoss())
-                for cid, data in client_data.items()
-            ]
+            local_datasets, test_dataset = dist_data_per_client(
+                self.data_path, self.dataset_name, self.num_clients,
+                self.batch_size, self.non_iid_per, self.device
+            )
         else:
-            self.clients = None
+            local_datasets = None
+            test_dataset = None
 
-    def broadcast_model(self):
-        """Broadcast global model parameters to all clients"""
-        weights = [p.data.cpu().numpy() for p in self.global_model.parameters()]
-        weights = self.comm.bcast(weights, root=0)
-        for p, w in zip(self.global_model.parameters(), weights):
-            p.data = torch.tensor(w, dtype=p.data.dtype, device=self.device)
+        # Broadcast test dataset to all processes
+        test_dataset = self.comm.bcast(test_dataset, root=0)
+        self.data = test_dataset
 
-    def aggregate(self, deltas, grads):
-        """MimeLite aggregation: combine deltas + gradients"""
-        num_clients = len(deltas)
-        avg_delta = [torch.zeros_like(p) for p in deltas[0]]
-        avg_grad = [torch.zeros_like(p) for p in grads[0]]
+        # Split local_datasets among processes
+        if self.rank == 0:
+            datasets_per_rank = np.array_split(local_datasets, self.size)
+        else:
+            datasets_per_rank = None
 
-        for d, g in zip(deltas, grads):
-            for i in range(len(d)):
-                avg_delta[i] += d[i] / num_clients
-                avg_grad[i] += g[i] / num_clients
+        # Scatter datasets to all ranks
+        local_dataset = self.comm.scatter(datasets_per_rank, root=0)
 
-        # Update global model
-        with torch.no_grad():
-            for p, d, g in zip(self.global_model.parameters(), avg_delta, avg_grad):
-                p.data -= 0.5 * (d + g)  # MimeLite update rule (simplified)
+        self.clients = self.create_clients(local_dataset)
+        logging.info(f"Process {self.rank}: Clients are successfully initialized")
 
-    def server_update(self, sampled_client_ids):
-        """Collect updates from sampled clients and aggregate"""
-        deltas, grads = [], []
-        for cid in sampled_client_ids:
-            delta, grad = self.clients[cid].client_update()
-            deltas.append(delta)
-            grads.append(grad)
+    def sample_clients(self):
+        """Selects a fraction of clients from all the available clients"""
+        num_sampled_clients = max(int(self.fraction * len(self.clients)), 1)
+        sampled_client_ids = sorted(np.random.choice(a=[i for i in range(len(self.clients))],
+                                                     size=num_sampled_clients, replace=False).tolist())
+        return sampled_client_ids
 
-        self.aggregate(deltas, grads)
+    def communicate(self, client_ids):
+        """Communicates global model(x) to the participating clients"""
+        for idx in client_ids:
+            self.clients[idx].x = deepcopy(self.x)
+
+    def update_clients(self, client_ids):
+        """Tells all the clients to perform client_update"""
+        for idx in client_ids:
+            self.clients[idx].client_update()
+
+    def server_update(self, client_ids):
+        """MimeLite server update: combines model differences and gradients"""
+        # Collect client models and gradients into CPU tensors
+        avg_deltas = [torch.zeros_like(param.data, device='cpu') for param in self.x.parameters()]
+        avg_grads = [torch.zeros_like(param.data, device='cpu') for param in self.x.parameters()]
+
+        # Sum client deltas and gradients locally
+        for idx in client_ids:
+            client = self.clients[idx]
+            
+            # Calculate delta (y - x)
+            for i, (global_param, client_param) in enumerate(zip(self.x.parameters(), client.y.parameters())):
+                delta = client_param.detach().cpu() - global_param.detach().cpu()
+                avg_deltas[i].add_(delta)
+            
+            # Add client gradients
+            for i, grad in enumerate(client.gradient_x):
+                avg_grads[i].add_(grad.detach().cpu())
+
+        # Reduce across all ranks
+        for i in range(len(avg_deltas)):
+            self.comm.Allreduce(MPI.IN_PLACE, avg_deltas[i].numpy(), op=MPI.SUM)
+            self.comm.Allreduce(MPI.IN_PLACE, avg_grads[i].numpy(), op=MPI.SUM)
+
+        # Average by total number of clients globally
+        total_clients = len(client_ids) * self.size
+        
+        # MimeLite update rule: x_{t+1} = x_t - η * (avg_delta + avg_grad)
+        for param, delta, grad in zip(self.x.parameters(), avg_deltas, avg_grads):
+            delta_avg = (delta / total_clients).to(self.device)
+            grad_avg = (grad / total_clients).to(self.device)
+            
+            # MimeLite aggregation with global stepsize
+            param.data -= self.lr * (delta_avg + grad_avg)
 
     def step(self):
-        """Run one training round"""
-        if self.rank == 0:
-            sampled_client_ids = np.random.choice(len(self.clients), self.clients_per_round, replace=False)
-        else:
-            sampled_client_ids = None
-        sampled_client_ids = self.comm.bcast(sampled_client_ids, root=0)
-
-        if self.rank == 0:
-            self.server_update(sampled_client_ids)
-
-        self.broadcast_model()
+        """Performs single round of training"""
+        sampled_client_ids = self.sample_clients()
+        self.communicate(sampled_client_ids)
+        self.update_clients(sampled_client_ids)
+        logging.info(f"Process {self.rank}: client_update has completed")
+        self.server_update(sampled_client_ids)
+        logging.info(f"Process {self.rank}: server_update has completed")
 
     def train(self):
-        for r in range(self.num_rounds):
-            if self.rank == 0:
-                print(f"Round {r+1}/{self.num_rounds}")
+        """Performs multiple rounds of training using the 'step' method."""
+        self.results = {"loss": [], "accuracy": []}
+        for rnd in range(self.num_rounds):
+            logging.info(f"\nProcess {self.rank}: Communication Round {rnd+1}")
             self.step()
+            test_loss, test_acc = evaluate_fn(self.data, self.x, self.criterion, self.device)
+
+            # Gather metrics at root
+            losses = self.comm.gather(test_loss, root=0)
+            accs = self.comm.gather(test_acc, root=0)
+
+            if self.rank == 0:
+                avg_loss = sum(losses) / len(losses)
+                avg_acc = sum(accs) / len(accs)
+                self.results['loss'].append(avg_loss)
+                self.results['accuracy'].append(avg_acc)
+                logging.info(f"\tLoss: {avg_loss:.4f}   Accuracy: {avg_acc:.2f}%")

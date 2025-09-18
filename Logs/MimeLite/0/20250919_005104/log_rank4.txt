@@ -1,0 +1,11 @@
+2025-09-19 00:51:04,822:INFO: Process 4 is initializing the server
+2025-09-19 00:51:05,218:INFO: Process 4: Server is successfully initialized
+2025-09-19 00:51:14,422:INFO: Process 4: Clients are successfully initialized
+2025-09-19 00:51:14,423:INFO: 
+Process 4: Communication Round 1
+2025-09-19 00:52:14,432:INFO: Client 0 completed training, Avg Loss: 2.527569
+2025-09-19 00:52:48,536:INFO: Client 17 completed training, Avg Loss: 2.521618
+2025-09-19 00:52:48,539:INFO: Process 4: client_update has completed
+2025-09-19 00:52:51,183:INFO: Process 4: server_update has completed
+2025-09-19 00:54:18,427:INFO: 
+Process 4: Communication Round 2
